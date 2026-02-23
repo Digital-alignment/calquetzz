@@ -1,0 +1,19 @@
+RECOMENDACIONES PARA LA BASE DE DATOS DE CONOCIMIENTO
+
+Para lograr una aplicación definitiva sobre el calendario Maya, se sugiere integrar los siguientes módulos de datos:
+
+1. CARGADORES DEL AÑO (YEAR BEARERS)
+   - Datos: Identificar cuál de los 4 Nawales (frecuentemente Kej, E, No'j, Ik') inicia el año solar Haab'.
+   - Propósito: Determinar la influencia colectiva para los próximos 365 días.
+
+2. COSMOLOGÍA DE TRECENA
+   - Datos: Mapear los 20 regentes (deidades) de cada trecena.
+   - Propósito: Proporcionar un contexto mitológico más profundo a los ciclos de 13 días.
+
+3. DICCIONARIO MULTILINGÜE
+   - Datos: Mapeo de términos en K'iche', Kaqchikel, Yucateco, Q'eqchi' y Mam.
+   - Propósito: Respetar la diversidad de los pueblos mayas actuales y antiguos.
+
+4. GUÍA DE OFRENDAS (XUKULEM)
+   - Datos: Materiales rituales por Nawal (Colores de velas, tipos de incienso).
+   - Propósito: Convertir la app en una herramienta práctica para practicantes y guías espirituales (Ajq'ijab').

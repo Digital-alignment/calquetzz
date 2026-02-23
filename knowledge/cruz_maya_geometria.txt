@@ -1,0 +1,13 @@
+ARQUITECTURA DE LA CRUZ MAYA
+
+La Cruz Maya no es una cruz católica, es un cosmograma de alineación temporal.
+
+Fórmulas de desplazamiento (en días):
+- Centro (Nacimiento): Offset 0.
+- Arriba (Engendración): Offset -273 días (ciclo humano de 9 meses).
+- Abajo (Destino): Offset +273 días.
+- Izquierda (Brazo Espiritual): Offset -93 días.
+- Derecha (Brazo Material): Offset +93 días.
+
+Interpretación:
+La cruz genera un equilibrio entre lo que fuimos (ancestros), lo que somos (esencia) y lo que seremos (misión), flanqueado por nuestras capacidades espirituales y materiales.

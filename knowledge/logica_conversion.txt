@@ -1,0 +1,14 @@
+CÁLCULO DEL NÚMERO DE DÍA JULIANO (JDN)
+
+Esta es la función maestra de sincronización.
+Archivo: mayanLogic.ts -> gregorianToJDN()
+
+Lógica:
+1. Manejo de la Era: Si es BCE, convertimos el año a valor astronómico (año - 1) * -1.
+2. Ajuste de Marzo: El algoritmo trata a Marzo como el primer mes del año para simplificar la cuenta de días bisiestos.
+3. Constantes: 4716 y 1524.5 son offsets astronómicos para alinear el día 0 de la era Juliana.
+
+Implementación:
+Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + day + b - 1524.5;
+
+Este número permite que cualquier fecha en la historia sea representada por un único entero, facilitando restas y sumas de ciclos mayas.

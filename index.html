@@ -1,0 +1,70 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oráculo del Calendario Maya</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Outfit', 'sans-serif'],
+              lexend: ['Lexend', 'sans-serif'],
+            },
+            fontWeight: {
+              normal: '400',
+              semibold: '600',
+              black: '900',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&family=Outfit:wght@100..900&display=swap');
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 400;
+            background-color: #1a1a15;
+            color: #e5e7eb;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Lexend', sans-serif;
+            font-weight: 900;
+        }
+
+        .stone-texture {
+            background-color: #2a2a24;
+            background-image: url("https://www.transparenttextures.com/patterns/dark-matter.png");
+        }
+
+        .jade-glow {
+            box-shadow: 0 0 15px rgba(52, 211, 153, 0.2);
+        }
+        
+        .shadow-jade {
+            box-shadow: 0 4px 20px -2px rgba(16, 185, 129, 0.3);
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>

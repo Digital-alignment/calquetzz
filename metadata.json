@@ -1,0 +1,5 @@
+{
+  "name": "Mayan Calendar Oracle",
+  "description": "A sophisticated calculator to convert between Gregorian and Mayan dates, exploring the Long Count, Tzolk'in, Haab, and the Lords of the Night cycles.",
+  "requestFramePermissions": []
+}
