@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Calendar, 
-  ArrowLeftRight, 
-  Info, 
+import {
+  Calendar,
+  ArrowLeftRight,
+  Info,
   Layers,
   Sparkles,
   LayoutGrid,
@@ -26,15 +26,15 @@ import {
   ShieldAlert,
   Users
 } from 'lucide-react';
-import { 
-  gregorianToJDN, 
-  jdnToMayan, 
-  jdnToGregorian, 
-  longCountToJDN 
+import {
+  gregorianToJDN,
+  jdnToMayan,
+  jdnToGregorian,
+  longCountToJDN
 } from './mayanLogic';
-import { 
-  MayanDate, 
-  ConversionDirection, 
+import {
+  MayanDate,
+  ConversionDirection,
   LongCount
 } from './types';
 import Calculator from './components/Calculator';
@@ -45,12 +45,17 @@ import CholquijSection from './components/CholquijSection';
 import BlogSection from './components/BlogSection';
 import LandingPage from './components/LandingPage';
 import AdminDashboard from './components/AdminDashboard';
+import UserAuthSection from './components/UserAuthSection';
+import AdminAuthSection from './components/AdminAuthSection';
+import { useAuth } from './components/AuthProvider';
 import { TZOLKIN_DAY_DETAILS, TZOLKIN_NAMES } from './constants';
 
-type ActiveTab = 'home' | 'calculator' | 'nahuales' | 'saberes' | 'proyectos' | 'contacto' | 'admin-dash';
+type ActiveTab = 'home' | 'calculator' | 'nahuales' | 'saberes' | 'proyectos' | 'contacto' | 'admin-dash' | 'user-auth' | 'admin-auth';
 export type AdminSubTab = 'stats' | 'nahuales' | 'proyectos' | 'saberes' | 'users' | 'contacto';
 
 const App: React.FC = () => {
+  const { role, isLoading, signOut, user } = useAuth();
+
   const [direction, setDirection] = useState<ConversionDirection>('GregorianToMayan');
   const [mayanResult, setMayanResult] = useState<MayanDate | null>(null);
   const [gregorianResult, setGregorianResult] = useState<any>(null);
@@ -66,7 +71,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#/', '');
-      
+
       if (hash.startsWith('adm/')) {
         const sub = hash.replace('adm/', '') as AdminSubTab;
         setActiveTab('admin-dash');
@@ -74,7 +79,7 @@ const App: React.FC = () => {
         return;
       }
 
-      const validTabs: ActiveTab[] = ['home', 'calculator', 'nahuales', 'saberes', 'proyectos', 'contacto', 'admin-dash'];
+      const validTabs: ActiveTab[] = ['home', 'calculator', 'nahuales', 'saberes', 'proyectos', 'contacto', 'admin-dash', 'user-auth', 'admin-auth'];
       if (validTabs.includes(hash as ActiveTab)) {
         setActiveTab(hash as ActiveTab);
         if (hash === 'admin-dash') setAdminSubTab('stats');
@@ -90,6 +95,20 @@ const App: React.FC = () => {
 
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
+
+  // Efecto adicional para proteger rutas cuando cambia el rol o la sesión
+  useEffect(() => {
+    if (!isLoading) {
+      if (activeTab === 'admin-dash' && role !== 'admin') {
+        navigateTo('home');
+      }
+
+      if ((activeTab === 'user-auth' || activeTab === 'admin-auth') && user) {
+        if (role === 'admin') navigateToAdmin('stats');
+        else navigateTo('calculator');
+      }
+    }
+  }, [role, activeTab, isLoading, user]);
 
   const navigateTo = (tab: ActiveTab) => {
     window.location.hash = `#/${tab}`;
@@ -159,7 +178,7 @@ const App: React.FC = () => {
               {isAdminView && <span className="text-[9px] font-black uppercase text-amber-500/60 tracking-[0.4em] hidden sm:block">Control de Sabiduría</span>}
             </div>
           </div>
-          
+
           <nav className="hidden xl:flex items-center gap-1">
             {!isAdminView ? (
               <>
@@ -169,8 +188,10 @@ const App: React.FC = () => {
                 <TabButton active={activeTab === 'saberes'} onClick={() => navigateTo('saberes')} icon={<BookOpen className="w-4 h-4" />} label="Saberes" />
                 <TabButton active={activeTab === 'proyectos'} onClick={() => navigateTo('proyectos')} icon={<Briefcase className="w-4 h-4" />} label="Proyectos" />
                 <TabButton active={activeTab === 'contacto'} onClick={() => navigateTo('contacto')} icon={<Mail className="w-4 h-4" />} label="Contacto" />
+                {!user && <TabButton active={activeTab === 'user-auth'} onClick={() => navigateTo('user-auth')} icon={<UserCircle className="w-4 h-4" />} label="Mi Portal" />}
+                {user && <TabButton active={false} onClick={() => { signOut(); navigateTo('home'); }} icon={<ArrowLeftRight className="w-4 h-4" />} label="Salir" />}
               </>
-            ) : (
+            ) : role === 'admin' ? (
               <>
                 <TabButton active={adminSubTab === 'stats'} onClick={() => navigateToAdmin('stats')} icon={<LayoutGrid className="w-4 h-4" />} label="Dashboard" isAdmin />
                 <TabButton active={adminSubTab === 'nahuales'} onClick={() => navigateToAdmin('nahuales')} icon={<Gem className="w-4 h-4" />} label="Nahuales" isAdmin />
@@ -181,11 +202,11 @@ const App: React.FC = () => {
                 <div className="h-6 w-px bg-amber-900/30 mx-2"></div>
                 <TabButton active={false} onClick={() => navigateTo('home')} icon={<X className="w-4 h-4" />} label="Cerrar Admin" isAdmin />
               </>
-            )}
+            ) : null}
           </nav>
 
           <div className="flex items-center gap-3">
-            <button 
+            <button
               className={`xl:hidden p-2.5 bg-[#151510] border rounded-xl ${isAdminView ? 'border-amber-900/30 text-amber-400' : 'border-emerald-900/30 text-emerald-400'}`}
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
@@ -204,8 +225,10 @@ const App: React.FC = () => {
                 <MobileMenuButton active={activeTab === 'saberes'} onClick={() => navigateTo('saberes')} icon={<BookOpen className="w-5 h-5" />} label="Saberes" />
                 <MobileMenuButton active={activeTab === 'proyectos'} onClick={() => navigateTo('proyectos')} icon={<Briefcase className="w-5 h-5" />} label="Proyectos" />
                 <MobileMenuButton active={activeTab === 'contacto'} onClick={() => navigateTo('contacto')} icon={<Mail className="w-5 h-5" />} label="Contacto" />
+                {!user && <MobileMenuButton active={activeTab === 'user-auth'} onClick={() => navigateTo('user-auth')} icon={<UserCircle className="w-5 h-5" />} label="Mi Portal" />}
+                {user && <MobileMenuButton active={false} onClick={() => { signOut(); navigateTo('home'); }} icon={<ArrowLeftRight className="w-5 h-5" />} label="Salir" />}
               </>
-            ) : (
+            ) : role === 'admin' ? (
               <>
                 <MobileMenuButton active={adminSubTab === 'stats'} onClick={() => navigateToAdmin('stats')} icon={<LayoutGrid className="w-5 h-5" />} label="Panel General" isAdmin />
                 <MobileMenuButton active={adminSubTab === 'nahuales'} onClick={() => navigateToAdmin('nahuales')} icon={<Gem className="w-5 h-5" />} label="Gestión Nahuales" isAdmin />
@@ -216,7 +239,7 @@ const App: React.FC = () => {
                 <div className="h-px bg-amber-900/20 my-2"></div>
                 <MobileMenuButton active={false} onClick={() => navigateTo('home')} icon={<Home className="w-5 h-5" />} label="Volver al Portal Público" isAdmin />
               </>
-            )}
+            ) : null}
           </div>
         )}
       </header>
@@ -250,7 +273,7 @@ const App: React.FC = () => {
           <div className="space-y-12 relative">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-6 mb-4">
               <h2 className="text-xs font-black text-emerald-900 uppercase tracking-[0.3em] font-lexend">Lectura del Tiempo</h2>
-              <button 
+              <button
                 onClick={() => setIsCalculatorOpen(true)}
                 className="w-full sm:w-auto group relative flex items-center justify-center gap-4 px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-3xl transition-all shadow-2xl shadow-emerald-900/50 jade-glow overflow-hidden"
               >
@@ -269,11 +292,11 @@ const App: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
               <div className="lg:col-span-4">
                 {mayanResult && (
-                  <ResultDisplay 
-                    mode="sidebar" 
-                    mayanDate={mayanResult} 
-                    gregorianDate={gregorianResult} 
-                    showGregorian={direction === 'MayanToGregorian'} 
+                  <ResultDisplay
+                    mode="sidebar"
+                    mayanDate={mayanResult}
+                    gregorianDate={gregorianResult}
+                    showGregorian={direction === 'MayanToGregorian'}
                     activeLecturaTab={activeLecturaTab}
                     onLecturaTabChange={handleLecturaTabChange}
                   />
@@ -281,10 +304,10 @@ const App: React.FC = () => {
               </div>
               <div className="lg:col-span-8 scroll-mt-24" ref={contentAreaRef}>
                 <div className="animate-in fade-in slide-in-from-right-4 duration-500">
-                   {mayanResult && activeLecturaTab === 'nawal' && <NawalDetailSection tzolkin={mayanResult.tzolkin} />}
-                   {mayanResult && activeLecturaTab === 'trecena' && <TrecenaSection trecena={mayanResult.trecena} currentJdn={mayanResult.jdn} tzolkinNumber={mayanResult.tzolkin.number} />}
-                   {mayanResult && activeLecturaTab === 'cross' && <CholquijSection cross={mayanResult.cross} tzolkinNumber={mayanResult.tzolkin.number} />}
-                   {mayanResult && activeLecturaTab === 'longcount' && <InfoSection />}
+                  {mayanResult && activeLecturaTab === 'nawal' && <NawalDetailSection tzolkin={mayanResult.tzolkin} />}
+                  {mayanResult && activeLecturaTab === 'trecena' && <TrecenaSection trecena={mayanResult.trecena} currentJdn={mayanResult.jdn} tzolkinNumber={mayanResult.tzolkin.number} />}
+                  {mayanResult && activeLecturaTab === 'cross' && <CholquijSection cross={mayanResult.cross} tzolkinNumber={mayanResult.tzolkin.number} />}
+                  {mayanResult && activeLecturaTab === 'longcount' && <InfoSection />}
                 </div>
               </div>
             </div>
@@ -299,7 +322,7 @@ const App: React.FC = () => {
               {TZOLKIN_NAMES.map(name => {
                 const detail = TZOLKIN_DAY_DETAILS[name];
                 return (
-                  <div 
+                  <div
                     key={name}
                     onClick={() => setSelectedNahual(selectedNahual === name ? null : name)}
                     className={`bg-[#2a2a24] stone-texture rounded-3xl p-6 border transition-all cursor-pointer group ${selectedNahual === name ? 'border-emerald-500 jade-glow ring-2 ring-emerald-500/20' : 'border-emerald-900/20 hover:border-emerald-500/40'}`}
@@ -318,15 +341,15 @@ const App: React.FC = () => {
                       <span>{detail.symbol}</span>
                       {selectedNahual === name ? <X className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
                     </div>
-                    
+
                     {selectedNahual === name && (
                       <div className="mt-6 pt-6 border-t border-emerald-900/10 space-y-4 animate-in zoom-in-95 duration-200">
                         <div className="p-4 bg-[#151510] rounded-xl text-xs text-emerald-100/80 leading-relaxed font-sans italic">
                           {detail.extended}
                         </div>
                         <div className="grid grid-cols-1 gap-2">
-                           <div className="text-[10px] uppercase font-black tracking-widest text-emerald-600">Glifo:</div>
-                           <p className="text-[10px] text-gray-500 leading-tight">{detail.glyph.glifo}</p>
+                          <div className="text-[10px] uppercase font-black tracking-widest text-emerald-600">Glifo:</div>
+                          <p className="text-[10px] text-gray-500 leading-tight">{detail.glyph.glifo}</p>
                         </div>
                       </div>
                     )}
@@ -348,27 +371,31 @@ const App: React.FC = () => {
           </div>
         ) : activeTab === 'contacto' ? (
           <div className="min-h-[50vh] flex flex-col items-center justify-center space-y-8 animate-in fade-in duration-500">
-             <div className="p-8 bg-[#2a2a24] stone-texture rounded-[3rem] border border-emerald-900/20 text-center w-full max-w-2xl">
+            <div className="p-8 bg-[#2a2a24] stone-texture rounded-[3rem] border border-emerald-900/20 text-center w-full max-w-2xl">
               <Mail className="w-16 h-16 text-emerald-500 mx-auto mb-6" />
               <h2 className="text-4xl font-black text-white uppercase tracking-widest font-lexend mb-4">Contacto</h2>
               <div className="h-1 w-24 bg-emerald-600 mx-auto rounded-full mb-6"></div>
               <p className="text-gray-500 italic uppercase text-[10px] tracking-[0.4em] font-black">Portal de Comunicación en Construcción</p>
             </div>
           </div>
-        ) : activeTab === 'admin-dash' ? (
+        ) : activeTab === 'admin-dash' && role === 'admin' ? (
           <AdminDashboard subTab={adminSubTab} onNavigateSubTab={navigateToAdmin} />
+        ) : activeTab === 'user-auth' ? (
+          <UserAuthSection onLoginSuccess={() => navigateTo('calculator')} onNavigateHome={() => navigateTo('home')} />
+        ) : activeTab === 'admin-auth' ? (
+          <AdminAuthSection onLoginSuccess={() => navigateToAdmin('stats')} onNavigateHome={() => navigateTo('home')} />
         ) : null}
       </main>
 
       <footer className={`mt-20 border-t py-12 bg-[#151510] ${isAdminView ? 'border-amber-900/20' : 'border-emerald-900/20'}`}>
         <div className="max-w-7xl mx-auto px-4 flex flex-col items-center gap-8 text-center">
           <nav className="flex flex-wrap justify-center gap-6 mb-4">
-             <FooterLink onClick={() => navigateTo('home')}>Inicio</FooterLink>
-             <FooterLink onClick={() => navigateTo('calculator')}>Calcular Tiempo</FooterLink>
-             <FooterLink onClick={() => navigateTo('nahuales')}>Nahuales</FooterLink>
-             <FooterLink onClick={() => navigateTo('saberes')}>Saberes</FooterLink>
-             <FooterLink onClick={() => navigateTo('proyectos')}>Proyectos</FooterLink>
-             <FooterLink onClick={() => navigateTo('contacto')}>Contacto</FooterLink>
+            <FooterLink onClick={() => navigateTo('home')}>Inicio</FooterLink>
+            <FooterLink onClick={() => navigateTo('calculator')}>Calcular Tiempo</FooterLink>
+            <FooterLink onClick={() => navigateTo('nahuales')}>Nahuales</FooterLink>
+            <FooterLink onClick={() => navigateTo('saberes')}>Saberes</FooterLink>
+            <FooterLink onClick={() => navigateTo('proyectos')}>Proyectos</FooterLink>
+            <FooterLink onClick={() => navigateTo('contacto')}>Contacto</FooterLink>
           </nav>
 
           <div className="flex flex-col items-center gap-6">
@@ -379,13 +406,23 @@ const App: React.FC = () => {
               <div className="text-[10px] text-emerald-900/30 font-black uppercase tracking-[0.5em]">Digital Alignment — Quetzal Project</div>
             </div>
 
-            <button 
-              onClick={() => navigateToAdmin('stats')}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-900/10 hover:bg-emerald-900/20 rounded-full border border-emerald-900/20 text-emerald-900 hover:text-amber-500 transition-all text-[9px] font-black uppercase tracking-widest font-lexend"
-            >
-              <ShieldAlert className="w-3 h-3" />
-              Acceso Administrador
-            </button>
+            {role === 'admin' ? (
+              <button
+                onClick={() => navigateToAdmin('stats')}
+                className="flex items-center gap-2 px-4 py-2 bg-amber-900/10 hover:bg-amber-900/20 rounded-full border border-amber-900/20 text-amber-500 hover:text-amber-400 transition-all text-[9px] font-black uppercase tracking-widest font-lexend mt-2"
+              >
+                <ShieldAlert className="w-3 h-3" />
+                Panel de Control
+              </button>
+            ) : !user ? (
+              <button
+                onClick={() => navigateTo('admin-auth')}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-900/10 hover:bg-emerald-900/20 rounded-full border border-emerald-900/20 text-emerald-900 hover:text-amber-500 transition-all text-[9px] font-black uppercase tracking-widest font-lexend mt-2"
+              >
+                <ShieldAlert className="w-3 h-3" />
+                Acceso Administrador
+              </button>
+            ) : null}
           </div>
         </div>
       </footer>
@@ -394,7 +431,7 @@ const App: React.FC = () => {
 };
 
 const FooterLink: React.FC<{ children: React.ReactNode; onClick: () => void }> = ({ children, onClick }) => (
-  <button 
+  <button
     onClick={onClick}
     className="text-[10px] font-black text-emerald-900 hover:text-emerald-400 uppercase tracking-[0.2em] transition-colors font-lexend"
   >
@@ -440,13 +477,12 @@ const DetailInfoCard: React.FC<{ icon: React.ReactNode; label: string; content: 
 );
 
 const TabButton: React.FC<{ active: boolean; onClick: () => void; icon: React.ReactNode; label: string; isAdmin?: boolean }> = ({ active, onClick, icon, label, isAdmin }) => (
-  <button 
-    onClick={onClick} 
-    className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all text-[11px] font-semibold uppercase tracking-widest whitespace-nowrap shrink-0 font-lexend border ${
-      active 
-        ? (isAdmin ? 'bg-amber-600 text-white border-amber-400 shadow-lg' : 'bg-emerald-600 text-white border-emerald-400 shadow-lg') 
-        : (isAdmin ? 'text-amber-700 border-transparent hover:text-amber-500 hover:border-amber-900/30' : 'text-emerald-700 border-transparent hover:text-emerald-500 hover:border-emerald-900/30')
-    }`}
+  <button
+    onClick={onClick}
+    className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all text-[11px] font-semibold uppercase tracking-widest whitespace-nowrap shrink-0 font-lexend border ${active
+      ? (isAdmin ? 'bg-amber-600 text-white border-amber-400 shadow-lg' : 'bg-emerald-600 text-white border-emerald-400 shadow-lg')
+      : (isAdmin ? 'text-amber-700 border-transparent hover:text-amber-500 hover:border-amber-900/30' : 'text-emerald-700 border-transparent hover:text-emerald-500 hover:border-emerald-900/30')
+      }`}
   >
     {icon}
     <span>{label}</span>
@@ -454,13 +490,12 @@ const TabButton: React.FC<{ active: boolean; onClick: () => void; icon: React.Re
 );
 
 const MobileMenuButton: React.FC<{ active: boolean; onClick: () => void; icon: React.ReactNode; label: string; isAdmin?: boolean }> = ({ active, onClick, icon, label, isAdmin }) => (
-  <button 
-    onClick={onClick} 
-    className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all text-sm font-black uppercase tracking-widest font-lexend ${
-      active 
-        ? (isAdmin ? 'bg-amber-600 text-white' : 'bg-emerald-600 text-white') 
-        : 'bg-[#151510] text-emerald-700'
-    }`}
+  <button
+    onClick={onClick}
+    className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all text-sm font-black uppercase tracking-widest font-lexend ${active
+      ? (isAdmin ? 'bg-amber-600 text-white' : 'bg-emerald-600 text-white')
+      : 'bg-[#151510] text-emerald-700'
+      }`}
   >
     {icon}
     <span>{label}</span>

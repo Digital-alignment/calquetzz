@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&family=Outfit:wght@100..900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-lexend font-black;
+  }
+}
+
+@layer utilities {
+  .stone-texture {
+    background-color: #2a2a24;
+    background-image: url("https://www.transparenttextures.com/patterns/dark-matter.png");
+  }
+
+  .jade-glow {
+    box-shadow: 0 0 15px rgba(52, 211, 153, 0.2);
+  }
+  
+  .shadow-jade {
+    box-shadow: 0 4px 20px -2px rgba(16, 185, 129, 0.3);
+  }
+}
