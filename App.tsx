@@ -47,10 +47,11 @@ import LandingPage from './components/LandingPage';
 import AdminDashboard from './components/AdminDashboard';
 import UserAuthSection from './components/UserAuthSection';
 import AdminAuthSection from './components/AdminAuthSection';
+import UserProfile from './src/components/UserProfile';
 import { useAuth } from './components/AuthProvider';
 import { TZOLKIN_DAY_DETAILS, TZOLKIN_NAMES } from './constants';
 
-type ActiveTab = 'home' | 'calculator' | 'nahuales' | 'saberes' | 'proyectos' | 'contacto' | 'admin-dash' | 'user-auth' | 'admin-auth';
+type ActiveTab = 'home' | 'calculator' | 'nahuales' | 'saberes' | 'proyectos' | 'contacto' | 'admin-dash' | 'user-auth' | 'admin-auth' | 'profile';
 export type AdminSubTab = 'stats' | 'nahuales' | 'proyectos' | 'saberes' | 'users' | 'contacto';
 
 const App: React.FC = () => {
@@ -79,7 +80,7 @@ const App: React.FC = () => {
         return;
       }
 
-      const validTabs: ActiveTab[] = ['home', 'calculator', 'nahuales', 'saberes', 'proyectos', 'contacto', 'admin-dash', 'user-auth', 'admin-auth'];
+      const validTabs: ActiveTab[] = ['home', 'calculator', 'nahuales', 'saberes', 'proyectos', 'contacto', 'admin-dash', 'user-auth', 'admin-auth', 'profile'];
       if (validTabs.includes(hash as ActiveTab)) {
         setActiveTab(hash as ActiveTab);
         if (hash === 'admin-dash') setAdminSubTab('stats');
@@ -106,6 +107,11 @@ const App: React.FC = () => {
       if ((activeTab === 'user-auth' || activeTab === 'admin-auth') && user) {
         if (role === 'admin') navigateToAdmin('stats');
         else navigateTo('calculator');
+      }
+
+      // Check profile access
+      if (activeTab === 'profile' && (!user || role === 'admin')) {
+        navigateTo('home');
       }
     }
   }, [role, activeTab, isLoading, user]);
@@ -189,7 +195,12 @@ const App: React.FC = () => {
                 <TabButton active={activeTab === 'proyectos'} onClick={() => navigateTo('proyectos')} icon={<Briefcase className="w-4 h-4" />} label="Proyectos" />
                 <TabButton active={activeTab === 'contacto'} onClick={() => navigateTo('contacto')} icon={<Mail className="w-4 h-4" />} label="Contacto" />
                 {!user && <TabButton active={activeTab === 'user-auth'} onClick={() => navigateTo('user-auth')} icon={<UserCircle className="w-4 h-4" />} label="Mi Portal" />}
-                {user && <TabButton active={false} onClick={() => { signOut(); navigateTo('home'); }} icon={<ArrowLeftRight className="w-4 h-4" />} label="Salir" />}
+                {user && role !== 'admin' && (
+                  <>
+                    <TabButton active={activeTab === 'profile'} onClick={() => navigateTo('profile')} icon={<UserCircle className="w-4 h-4" />} label="Mi Perfil" />
+                    <TabButton active={false} onClick={() => { signOut(); navigateTo('home'); }} icon={<ArrowLeftRight className="w-4 h-4" />} label="Salir" />
+                  </>
+                )}
               </>
             ) : role === 'admin' ? (
               <>
@@ -226,7 +237,12 @@ const App: React.FC = () => {
                 <MobileMenuButton active={activeTab === 'proyectos'} onClick={() => navigateTo('proyectos')} icon={<Briefcase className="w-5 h-5" />} label="Proyectos" />
                 <MobileMenuButton active={activeTab === 'contacto'} onClick={() => navigateTo('contacto')} icon={<Mail className="w-5 h-5" />} label="Contacto" />
                 {!user && <MobileMenuButton active={activeTab === 'user-auth'} onClick={() => navigateTo('user-auth')} icon={<UserCircle className="w-5 h-5" />} label="Mi Portal" />}
-                {user && <MobileMenuButton active={false} onClick={() => { signOut(); navigateTo('home'); }} icon={<ArrowLeftRight className="w-5 h-5" />} label="Salir" />}
+                {user && role !== 'admin' && (
+                  <>
+                    <MobileMenuButton active={activeTab === 'profile'} onClick={() => navigateTo('profile')} icon={<UserCircle className="w-5 h-5" />} label="Mi Perfil" />
+                    <MobileMenuButton active={false} onClick={() => { signOut(); navigateTo('home'); }} icon={<ArrowLeftRight className="w-5 h-5" />} label="Salir" />
+                  </>
+                )}
               </>
             ) : role === 'admin' ? (
               <>
@@ -384,6 +400,8 @@ const App: React.FC = () => {
           <UserAuthSection onLoginSuccess={() => navigateTo('calculator')} onNavigateHome={() => navigateTo('home')} />
         ) : activeTab === 'admin-auth' ? (
           <AdminAuthSection onLoginSuccess={() => navigateToAdmin('stats')} onNavigateHome={() => navigateTo('home')} />
+        ) : activeTab === 'profile' && user ? (
+          <UserProfile />
         ) : null}
       </main>
 
